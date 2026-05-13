@@ -29,9 +29,9 @@ class MovieLibrary:
         self.load_data()
         self.create_widgets()
         self.update_table()
+        self.update_filters()
 
     def create_widgets(self):
-        # Поля ввода
         tk.Label(self.root, text="Название:").grid(row=0, column=0, sticky="w", padx=5, pady=5)
         self.title_entry = tk.Entry(self.root, width=30)
         self.title_entry.grid(row=0, column=1, padx=5, pady=5)
@@ -48,11 +48,9 @@ class MovieLibrary:
         self.rating_entry = tk.Entry(self.root, width=30)
         self.rating_entry.grid(row=3, column=1, padx=5, pady=5)
 
-        # Кнопка добавления
         self.add_button = tk.Button(self.root, text="Добавить фильм", command=self.add_movie)
         self.add_button.grid(row=4, column=0, columnspan=2, pady=10)
 
-        # Фильтры
         tk.Label(self.root, text="Фильтр по жанру:").grid(row=5, column=0, sticky="w", padx=5, pady=5)
         self.genre_filter = ttk.Combobox(self.root, state="readonly")
         self.genre_filter.grid(row=5, column=1, padx=5, pady=5)
@@ -63,7 +61,6 @@ class MovieLibrary:
         self.year_filter.grid(row=6, column=1, padx=5, pady=5)
         self.year_filter.bind("<<ComboboxSelected>>", self.apply_filters)
 
-        # Таблица
         columns = ("Название", "Жанр", "Год выпуска", "Рейтинг")
         self.tree = ttk.Treeview(self.root, columns=columns, show="headings", height=10)
 
@@ -73,13 +70,11 @@ class MovieLibrary:
 
         self.tree.grid(row=7, column=0, columnspan=2, padx=5, pady=10, sticky="nsew")
 
-        # Полоса прокрутки
         scrollbar = ttk.Scrollbar(self.root, orient="vertical", command=self.tree.yview)
         scrollbar.grid(row=7, column=2, sticky="ns")
         self.tree.configure(yscrollcommand=scrollbar.set)
 
     def validate_input(self):
-        """Проверка корректности ввода"""
         try:
             year = int(self.year_entry.get())
             if year < 1800 or year > 2030:
@@ -105,7 +100,6 @@ class MovieLibrary:
         return True
 
     def add_movie(self):
-        """Добавление нового фильма"""
         if not self.validate_input():
             return
 
@@ -123,14 +117,12 @@ class MovieLibrary:
         self.update_filters()
 
     def clear_entries(self):
-        """Очистка полей ввода"""
         self.title_entry.delete(0, tk.END)
         self.genre_entry.delete(0, tk.END)
         self.year_entry.delete(0, tk.END)
         self.rating_entry.delete(0, tk.END)
 
     def load_data(self):
-        """Загрузка данных из JSON"""
         if os.path.exists("movies.json"):
             try:
                 with open("movies.json", "r", encoding="utf-8") as f:
@@ -141,12 +133,10 @@ class MovieLibrary:
             self.movies = []
 
     def save_data(self):
-        """Сохранение данных в JSON"""
         with open("movies.json", "w", encoding="utf-8") as f:
             json.dump(self.movies, f, ensure_ascii=False, indent=4)
 
     def update_table(self, filtered_movies=None):
-        """Обновление таблицы"""
         for item in self.tree.get_children():
             self.tree.delete(item)
 
@@ -161,7 +151,6 @@ class MovieLibrary:
             ))
 
     def update_filters(self):
-        """Обновление списков фильтров"""
         genres = sorted(set(movie["genre"] for movie in self.movies if movie["genre"]))
         years = sorted(set(str(movie["year"]) for movie in self.movies))
 
@@ -172,7 +161,6 @@ class MovieLibrary:
         self.year_filter.set("Все")
 
     def apply_filters(self, event=None):
-        """Применение фильтров"""
         selected_genre = self.genre_filter.get()
         selected_year = self.year_filter.get()
 
@@ -185,6 +173,11 @@ class MovieLibrary:
             filtered_movies = [m for m in filtered_movies if str(m["year"]) == selected_year]
 
         self.update_table(filtered_movies)
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = MovieLibrary(root)
+    root.mainloop()
 
 # Запуск приложения
 if __name__ == "__main__":
